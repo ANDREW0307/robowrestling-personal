@@ -1,0 +1,60 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/include",
+                "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/src",
+                "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/.pio/libdeps/nanoatmega328/MPU6050_light/src",
+                "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/.pio/libdeps/nanoatmega328/Servo/src",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/include",
+                    "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/src",
+                    "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/.pio/libdeps/nanoatmega328/MPU6050_light/src",
+                    "/Users/andrewli/Documents/robowrestling/Pooki_10-31_simple/.pio/libdeps/nanoatmega328/Servo/src",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/andrewli/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60116",
+                "ARDUINO_AVR_NANO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "/Users/andrewli/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
