@@ -2,6 +2,15 @@
 #include <Servo.h>
 #include <MPU6050_light.h>
 
+/*    TODOS
+
+  - make sure all functions in testing mode are working (find in start_routine() case 8)
+  - make sure check_boundary works
+  - when check_boundary works, create a check_boundary that counts iterations (sensor reinforcement)
+
+*/
+
+
 // ========== pin definitions ==========
 
 // sensors
@@ -33,11 +42,19 @@
 
 bool debugMode = false;
 
+// ir sensor configurations
+const bool irconfig_mid_only[5] = {false, false, true, false, false};
+const bool irconfig_mid_three[5] = {false, true, true, true, false};
+const bool irconfig_left_only[5] = {true, false, false, false, false};
+const bool irconfig_right_only[5] = {false, false, false, false, true};
+const bool irconfig_mid_midleft[5] = {false, true, true, false, false};
+const bool irconfig_mid_midright[5] = {false, false, true, true, false};
 
-// ========== forward delcarations ==========
+// ========== general forward delcarations ==========
 void setPinModes();
 int getStrat();
-void start_routine(); 
+void start_routine();
+void wrap_around(bool direction); // 0 for wrap around left, 1 for wrap around right
 
 // sensors
 bool get_at_boundary();
@@ -50,17 +67,102 @@ void move_forwards(int speed, int time);
 void move_backwards(int speed);
 void move_backwards(int speed, int time);
 
-void move_turn(int left_speed, int right_speed);
-void move_turn(int left_speed, int right_speed, int time);
+void move_turn_forwards(int left_speed, int right_speed);
+void move_turn_forwards(int left_speed, int right_speed);
+void move_turn_backwards(int left_speed, int right_speed, int time);
+void move_turn_backwards(int left_speed, int right_speed, int time);
 
 void turn_right(int speed, int time);
 void turn_left(int speed, int time);
+
+void brake_high();
 
 // misc
 void debug_mode_loop(int device);
 
 
 // ========== function implementations 
+
+// movement functions
+void move_forwards(int speed) {
+  analogWrite(L_MOTOR_FWD, speed);
+  analogWrite(L_MOTOR_REV, 0);
+  analogWrite(R_MOTOR_FWD, speed);
+  analogWrite(R_MOTOR_REV, 0);
+}
+void move_forwards(int speed, int time) {
+  analogWrite(L_MOTOR_FWD, speed);
+  analogWrite(L_MOTOR_REV, 0);
+  analogWrite(R_MOTOR_FWD, speed);
+  analogWrite(R_MOTOR_REV, 0);
+  delay(time);
+  brake_high();
+}
+void move_backwards(int speed) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, speed);
+  analogWrite(R_MOTOR_FWD, 0);
+  analogWrite(R_MOTOR_REV, speed);
+} 
+void move_backwards(int speed, int time) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, speed);
+  analogWrite(R_MOTOR_FWD, 0);
+  analogWrite(R_MOTOR_REV, speed);
+  delay(time);
+  brake_high();
+}
+void move_turn_forwards(int left_speed, int right_speed) {
+  analogWrite(L_MOTOR_FWD, left_speed);
+  analogWrite(L_MOTOR_REV, 0);
+  analogWrite(R_MOTOR_FWD, right_speed);
+  analogWrite(R_MOTOR_REV, 0);
+}
+void move_turn_forwards(int left_speed, int right_speed, int time) {
+  analogWrite(L_MOTOR_FWD, left_speed);
+  analogWrite(L_MOTOR_REV, 0);
+  analogWrite(R_MOTOR_FWD, right_speed);
+  analogWrite(R_MOTOR_REV, 0);
+  delay(time);
+  brake_high();
+}
+void move_turn_backwards(int left_speed, int right_speed) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, left_speed);
+  analogWrite(R_MOTOR_FWD, 0);
+  analogWrite(R_MOTOR_REV, right_speed);
+}
+void move_turn_backwards(int left_speed, int right_speed, int time) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, left_speed);
+  analogWrite(R_MOTOR_FWD, 0);
+  analogWrite(R_MOTOR_REV, right_speed);
+  delay(time);
+  brake_high();
+}
+void turn_right(int speed, int time) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, speed);
+  analogWrite(R_MOTOR_FWD, speed);
+  analogWrite(R_MOTOR_REV, 0);
+  delay(time);
+  brake_high();
+}
+void turn_left(int speed, int time) {
+  analogWrite(L_MOTOR_FWD, 0);
+  analogWrite(L_MOTOR_REV, speed);
+  analogWrite(R_MOTOR_FWD, speed);
+  analogWrite(R_MOTOR_REV, 0);
+  delay(time);
+  brake_high();
+}
+void brake_high() {
+  digitalWrite(L_MOTOR_FWD, HIGH);
+  digitalWrite(L_MOTOR_REV, HIGH);
+  digitalWrite(R_MOTOR_FWD, HIGH);
+  digitalWrite(R_MOTOR_REV, HIGH);
+}
+
 
 void setPinModes() {
   pinMode(IR_LEFT, INPUT);
@@ -112,6 +214,19 @@ void start_routine() {
     case 7:
       break;
     case 8:
+      // testing mode
+      /*
+        things to test in this order
+        - move_forwards(int speed);
+        - brake_high();
+        - move_forwards(int speed, int time);
+        - move_backwards(int speed);
+        - move_backwards(int speed, int time);
+        - turn_left(int speed, int time); turn_right(int speed, int time)
+        - move_turn_forwards(int left_speed, int right_speed); move_turn_backwards(int left_speed, int right_speed);
+        - move_turn_forwards(int left_speed, int right_speed, int time); move_turn_backwards(int left_speed, int right_speed, int time);
+        - wrap_around();
+      */
       break;
     default:
       break;
@@ -161,6 +276,36 @@ void debug_mode_loop(int device) {
       break;
   }
 }
+bool check_ir(bool desired_state[5]) {
+  bool current_state[5];
+  int ir_pins[] = {IR_LEFT, IR_MIDLEFT, IR_MID, IR_MIDRIGHT, IR_RIGHT};
+  for (int i = 0; i < 5; i++) {
+    current_state[i] = digitalRead(ir_pins[i]);
+    if (current_state[i] != desired_state[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+void wrap_around(bool direction) {
+  int first_turn_speed = 100;
+  int first_turn_time = 100;
+  int move_turn_speed_faster = 255;
+  int move_turn_speed_slower = 100;
+  int move_turn_speed_time = 250;
+  int second_turn_speed = 255;
+  int second_turn_time = 150;
+  if (direction == 0) {
+    turn_left(first_turn_speed, first_turn_time);
+    move_turn_forwards(move_turn_speed_faster, move_turn_speed_slower, move_turn_speed_time);
+    turn_right(second_turn_speed, second_turn_time);
+  } else {
+    turn_right(first_turn_speed, first_turn_time);
+    move_turn_forwards(move_turn_speed_slower, move_turn_speed_faster, move_turn_speed_time);
+    turn_left(second_turn_speed, second_turn_time);
+  }
+}
+
 
 void setup() {
   setPinModes();
